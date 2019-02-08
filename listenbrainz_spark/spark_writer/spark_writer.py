@@ -20,22 +20,36 @@ import pika
 import uuid
 import json
 
+import listenbrainz_spark
+from datetime import datetime
 from listenbrainz_spark import config, hdfs_connection
 from listenbrainz_spark.utils import init_rabbitmq, create_app
+from listenbrainz_spark.schema import convert_to_spark_json, listen_schema
 from flask import current_app
-
-HDFS_FILE_SIZE_LIMIT = 1024 * 1024 * 1024 # 1 GB
 
 
 class SparkWriter:
 
     def write_message_to_hdfs(self, listens):
         current_app.logger.error(json.dumps(listens, indent=4))
-        data = self._convert_listens_to_string(listens)
-        path = self._create_path(self.current_file)
-        hdfs_connection.client.write(path, data=data, append=True)
-        if self._get_size(self.current_file) > HDFS_FILE_SIZE_LIMIT:
-            self.current_file = self._new_file()
+        rows = {}
+        for listen in listens:
+            dt = datetime.utcfromtimestamp(listen['listened_at'])
+            year = dt.year
+            month = dt.month
+            listen = convert_to_spark_json(listen)
+            if year not in rows:
+                rows[year] = {}
+            if month not in rows[year]:
+                rows[year][month] = [listen]
+            else:
+                rows[year][month].append(listen)
+        for year in rows:
+            for month in rows[year]:
+                df = listenbrainz_spark.session.createDataFrame(rows[year][month], schema=listen_schema)
+                df.write.mode('append').parquet(current_app.config['HDFS_CLUSTER_URI'] + '/data/listenbrainz/%s/%s.parquet' % (str(year), str(month)))
+
+
 
     def callback(self, channel, method, properties, body):
         listens = json.loads(body.decode('utf-8'))
@@ -45,8 +59,7 @@ class SparkWriter:
     def run(self):
         with create_app().app_context():
             while True:
-                hdfs_connection.init_hdfs(current_app.config['HDFS_NAMENODE_URI'])
-                self.current_file = self._new_file()
+                hdfs_connection.init_hdfs(current_app.config['HDFS_HTTP_URI'])
                 rabbitmq = init_rabbitmq(
                     username=current_app.config['RABBITMQ_USERNAME'],
                     password=current_app.config['RABBITMQ_PASSWORD'],
@@ -69,27 +82,10 @@ class SparkWriter:
                     continue
                 rabbitmq.close()
 
-    def _create_path(self, filename):
-        return os.path.join('/data', 'listenbrainz', filename[0], filename[0:2], filename)
-
-    def _get_size(self, filename):
-        return hdfs_connection.client.status(self._create_path(filename))['length']
-
-    def _convert_listens_to_string(self, listens):
-        data = ''
-        for listen in listens:
-            data += json.dumps(listen) + '\n'
-        return data
-
-    def _new_file(self):
-        filename = str(uuid.uuid4()) + '.listens'
-        hdfs_connection.client.write(self._create_path(filename), data='')
-        return filename
-
-
-def main():
+def main(app_name):
+    listenbrainz_spark.init_spark_session(app_name)
     SparkWriter().run()
 
 
 if __name__ == '__main__':
-    main()
+    main('spark-writer')
