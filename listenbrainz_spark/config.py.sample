@@ -13,5 +13,5 @@ SPARK_EXCHANGE = "spark"
 SPARK_QUEUE = "spark"
 
 # RabbitMQ exchanges and queues
-INCOMING_EXCHANGE = "spark"
-INCOMING_QUEUE = "spark"
+INCOMING_EXCHANGE = 'unique'
+INCOMING_QUEUE = 'spark_writer'
