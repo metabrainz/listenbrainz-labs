@@ -8,9 +8,13 @@ def get_most_popular():
     result = run_query("""
         SELECT artist_msid
              , artist_name
-             , count(artist_msid) as cnt
+             , release_msid
+             , release_name
+             , track_name
+             , recording_msid
+             , count(recording_msid) as cnt
           FROM listen
-      GROUP BY artist_msid, artist_name
+      GROUP BY artist_msid, artist_name, release_msid, release_name, track_name, recording_msid
       ORDER BY cnt DESC
     """)
     result.show()

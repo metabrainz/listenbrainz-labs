@@ -1,6 +1,8 @@
 import sys
 from listenbrainz_spark.stats import user
 from listenbrainz_spark.stats import artist
+from listenbrainz_spark.stats import release
+from listenbrainz_spark.stats import recording
 
 
 if __name__ == '__main__':
@@ -13,3 +15,7 @@ if __name__ == '__main__':
         user.main(app_name=sys.argv[2])
     elif module_name == 'artist':
         artist.main(app_name=sys.argv[2])
+    elif module_name == 'release':
+        release.main(app_name=sys.argv[2])
+    elif module_name == 'recording':
+        recording.main(app_name=sys.argv[2])
