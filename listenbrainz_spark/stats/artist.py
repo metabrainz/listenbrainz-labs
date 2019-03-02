@@ -12,8 +12,10 @@ def get_releases():
              , release_name
              , release_mbid
              , release_msid
+             , count(release_msid) as cnt
           FROM listen
       GROUP BY artist_msid, release_name, release_mbid, release_msid
+      ORDER BY cnt DESC
     """)
     result.show()
     releases = defaultdict(list)
@@ -22,6 +24,7 @@ def get_releases():
             'release_name' : row.release_name,
             'release_msid' : row.release_msid,
             'release_mbid' : row.release_mbid,
+            'count' : row.cnt,
         })
     return releases
 
@@ -31,8 +34,10 @@ def get_recordings():
              , track_name
              , recording_mbid
              , recording_msid
+             , count(recording_msid) as cnt
           FROM listen
       GROUP BY artist_msid, track_name, recording_mbid, recording_msid
+      ORDER bY cnt DESC
     """)
     result.show()
     recordings = defaultdict(list)
@@ -41,6 +46,7 @@ def get_recordings():
             'recording_name' : row.track_name,
             'recording_msid' : row.recording_msid,
             'recording_mbid' : row.recording_mbid,
+            'cnt' : row.cnt,
         })
     return recordings
 
@@ -65,40 +71,27 @@ def get_listener():
 def get_listen_count():
     result = run_query("""
         SELECT artist_msid
+             , artist_name
              , count(artist_msid) as cnt
           FROM listen
-      GROUP BY artist_msid
+      GROUP BY artist_msid, artist_name
       ORDER BY cnt DESC
     """)
     result.show()
-    artist_count = defaultdict(list)
+    artist_count = defaultdict(dict)
     for row in result.collect():
-        artist_count[row.artist_msid].append({
-            'artist_count' : row.cnt,
-        })
-    return artist_count
-
-def get_artist_names():
-    result = run_query("""
-        SELECT artist_msid
-             , artist_name
-          FROM listen
-      GROUP BY artist_msid, artist_name
-    """)
-    result.show()
-    artist_name = defaultdict(list)
-    for row in result.collect():
-        artist_name[row.artist_msid].append({
+        artist_count[row.artist_msid] = {
+            'listen_count' : row.cnt,
             'artist_name' : row.artist_name,
-        })
-    return artist_name
+        }
+    return artist_count
     
 def main(app_name):
     t0 = time.time()
     listenbrainz_spark.init_spark_session(app_name)
     df = None
     t = datetime.utcnow().replace(day=1)
-    date = t + relativedelta(months=-1)
+    date = t + relativedelta(months=-2)
     for y in range(date.year, date.year + 1):
         for m in range(date.month, date.month + 1):
             try:
@@ -120,11 +113,11 @@ def main(app_name):
     listeners = get_listener()
     for artist_mbid, listener in listeners.items():
         data[artist_mbid]['listener'] = listener
-    count = get_listen_count()
-    for artist_mbid, cnt in count.items():
-        data[artist_mbid]['artist_count'] = cnt
-    names = get_artist_names()
-    for artist_mbid, name in names.items():
-        data[artist_mbid]['artist_name'] = name
-    print (data)
+    artist = get_listen_count()
+    for artist_mbid, artist_data in artist.items():
+        data[artist_mbid]['artist'] = artist_data
+    top_artist_msids = sorted(data, key=lambda x: data[x]['artist']['listen_count'], reverse=True)
+    limit = min(100, len(top_artist_msids))
+    for i in range(0, limit+1):
+        print (data[top_artist_msids[i]])
     print("time = %.2f" % (time.time() - t0))
