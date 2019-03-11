@@ -43,7 +43,7 @@ def get_recordings():
     recordings = defaultdict(list)
     for row in result.collect():
         recordings[row.artist_msid].append({
-            'recording_name' : row.track_name,
+            'track_name' : row.track_name,
             'recording_msid' : row.recording_msid,
             'recording_mbid' : row.recording_mbid,
             'cnt' : row.cnt,
@@ -105,17 +105,17 @@ def main(app_name):
     print("querying...")
     data = defaultdict(dict)
     releases = get_releases()
-    for artist_mbid, release in releases.items():
-        data[artist_mbid]['release'] = release
+    for artist_msid, release in releases.items():
+        data[artist_msid]['release'] = release
     recordings = get_recordings()
-    for artist_mbid, recording in recordings.items():
-        data[artist_mbid]['recording'] = recording
+    for artist_msid, recording in recordings.items():
+        data[artist_msid]['recording'] = recording
     listeners = get_listener()
-    for artist_mbid, listener in listeners.items():
-        data[artist_mbid]['listener'] = listener
+    for artist_msid, listener in listeners.items():
+        data[artist_msid]['listener'] = listener
     artist = get_listen_count()
-    for artist_mbid, artist_data in artist.items():
-        data[artist_mbid]['artist'] = artist_data
+    for artist_msid, artist_data in artist.items():
+        data[artist_msid]['artist'] = artist_data
     top_artist_msids = sorted(data, key=lambda x: data[x]['artist']['listen_count'], reverse=True)
     limit = min(100, len(top_artist_msids))
     for i in range(0, limit+1):
