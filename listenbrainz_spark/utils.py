@@ -21,9 +21,14 @@ def create_path(path):
 def create_app():
     app = CustomFlask(import_name=__name__)
     config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.py')
-    for i in range(APP_CREATION_RETRY_COUNT):
-        if not os.path.exists(config_file):
-            sleep(1)
+    for _ in range(APP_CREATION_RETRY_COUNT):
+        if os.path.exists(config_file):
+            break
+        sleep(1)
+    else:
+        print("Config file does not exist!")
+        return None
+
     app.config.from_pyfile(config_file)
     app.init_loggers(
         file_config=app.config.get('LOG_FILE'),

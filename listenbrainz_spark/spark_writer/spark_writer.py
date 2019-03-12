@@ -19,6 +19,7 @@ import os
 import pika
 import uuid
 import json
+import sys
 
 import listenbrainz_spark
 from datetime import datetime
@@ -57,7 +58,10 @@ class SparkWriter:
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def run(self):
-        with create_app().app_context():
+        app = create_app()
+        if not app:
+            sys.exit(-1)
+        with app.app_context():
             while True:
                 hdfs_connection.init_hdfs(current_app.config['HDFS_HTTP_URI'])
                 rabbitmq = init_rabbitmq(
