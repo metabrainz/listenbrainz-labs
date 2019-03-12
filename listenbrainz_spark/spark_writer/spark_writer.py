@@ -32,7 +32,6 @@ from flask import current_app
 class SparkWriter:
 
     def write_message_to_hdfs(self, listens):
-        current_app.logger.error(json.dumps(listens, indent=4))
         rows = {}
         for listen in listens:
             dt = datetime.utcfromtimestamp(listen['listened_at'])
