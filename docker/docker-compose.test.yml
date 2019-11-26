@@ -1,7 +1,6 @@
 version: "3.4"
 
 volumes:
-    datanode:
     namenode:
 
 services:
@@ -14,8 +13,6 @@ services:
   datanode:
     image: metabrainz/hadoop-yarn:beta
     command: hdfs datanode
-    volumes:
-      - datanode:/home/hadoop/hdfs:z
 
   test:
     build:
