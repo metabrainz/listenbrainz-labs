@@ -21,3 +21,6 @@ def calculate():
         }
 
     return data
+
+if __name__ == '__main__':
+    print(len(calculate()))
