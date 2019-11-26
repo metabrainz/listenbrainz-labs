@@ -1,4 +1,6 @@
 import json
+import listenbrainz_spark
+
 from datetime import datetime
 from listenbrainz_spark.utils import get_listens
 from listenbrainz_spark.constants import LAST_FM_FOUNDING_YEAR
@@ -24,6 +26,7 @@ def calculate():
     return data
 
 if __name__ == '__main__':
+    listenbrainz_spark.init_spark_session('main-user-all')
     data = calculate()
     with open('/rec/stats.json', 'w') as f:
         f.write(json.dumps(data, indent=4))
