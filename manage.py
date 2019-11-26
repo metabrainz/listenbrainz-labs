@@ -122,6 +122,12 @@ def request_consumer():
     with app.app_context():
         main('request-consumer-%s' % str(int(time.time())))
 
+@cli.command(name='test_all')
+def test_all():
+    from listenbrainz.stats.user.all import main
+    with app.app_context():
+        main()
+
 
 @cli.resultcallback()
 def remove_zip(result, **kwargs):

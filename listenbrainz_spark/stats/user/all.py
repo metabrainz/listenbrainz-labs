@@ -26,10 +26,9 @@ def calculate():
 
     return data
 
-if __name__ == '__main__':
-    with create_app().app_context():
-        listenbrainz_spark.init_spark_session('main-user-all')
-        data = calculate()
-        with open('/rec/stats.json', 'w') as f:
-            f.write(json.dumps(data, indent=4))
-        print('Length: %d' % len(data))
+def main():
+    listenbrainz_spark.init_spark_session('main-user-all')
+    data = calculate()
+    with open('/rec/stats.json', 'w') as f:
+        f.write(json.dumps(data, indent=4))
+    print('Length: %d' % len(data))
