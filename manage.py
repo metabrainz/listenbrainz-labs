@@ -124,7 +124,7 @@ def request_consumer():
 
 @cli.command(name='test_all')
 def test_all():
-    from listenbrainz.stats.user.all import main
+    from listenbrainz_spark.stats.user.all import main
     with app.app_context():
         main()
 
