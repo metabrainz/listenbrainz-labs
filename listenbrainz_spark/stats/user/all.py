@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from listenbrainz_spark.utils import get_listens
 from listenbrainz_spark.constants import LAST_FM_FOUNDING_YEAR
@@ -23,4 +24,7 @@ def calculate():
     return data
 
 if __name__ == '__main__':
-    print(len(calculate()))
+    data = calculate()
+    with open('/rec/stats.json', 'w') as f:
+        f.write(json.dumps(data, indent=4))
+    print('Length: %d' % len(data))
