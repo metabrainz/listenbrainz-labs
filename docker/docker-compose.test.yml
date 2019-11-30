@@ -1,14 +1,9 @@
 version: "3.4"
 
-volumes:
-    namenode:
-
 services:
   hadoop-master:
     image: metabrainz/hadoop-yarn:beta
     command: hdfs namenode
-    volumes:
-      - namenode:/home/hadoop/hdfs:z
 
   datanode:
     image: metabrainz/hadoop-yarn:beta
