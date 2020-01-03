@@ -124,7 +124,7 @@ def request_consumer():
         main('request-consumer-%s' % str(int(time.time())))
 
 @cli.command(name="import")
-@click.argument('filename')
+@click.argument('filename', type=click.Path(exists=True))
 def import(filename):
     import_dump.main(app_name='import', archive=filename)
 
