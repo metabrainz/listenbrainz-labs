@@ -4,10 +4,11 @@ from listenbrainz_spark.constants import LAST_FM_FOUNDING_YEAR
 from listenbrainz_spark import path
 from listenbrainz_spark.stats.user.utils import get_artists
 from collections import defaultdict
+from flask import current_app
 
 def calculate():
     now = datetime.utcnow()
-    listens_df = get_listens(from_date=datetime(LAST_FM_FOUNDING_YEAR, 1, 1), to_date=now, dest_path=path.LISTENBRAINZ_DATA_DIRECTORY)
+    listens_df = get_listens(from_date=datetime(LAST_FM_FOUNDING_YEAR, 1, 1), to_date=now, dest_path=current_app.config['HDFS_CLUSTER_URI'] + path.LISTENBRAINZ_DATA_DIRECTORY)
     table_name = 'stats_user_all'
     listens_df.createOrReplaceTempView(table_name)
 
