@@ -1,4 +1,4 @@
-Note: We plan to archive this repository very soon. Please open all pull requests in
+Note: This repository is archived and merged into listenbrainz-server. Please open all pull requests in
 the [listenbrainz-server](https://github.com/metabrainz/listenbrainz-server) codebase.
 
 Things to do in order for them to run correctly:
